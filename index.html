@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetroArcade — Play Classic Games</title>
+
+<!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your Publisher ID -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
+<style>
+  :root {
+    --bg: #0a0a12;
+    --surface: #13131f;
+    --card: #1c1c2e;
+    --border: #2a2a42;
+    --accent: #7c5cfc;
+    --accent2: #fc5c7d;
+    --accent3: #43e97b;
+    --text: #f0eeff;
+    --muted: #7a7a9a;
+    --pixel: 'Press Start 2P', monospace;
+    --sans: system-ui, sans-serif;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .logo {
+    font-family: var(--pixel);
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .logo span { color: var(--accent2); }
+  .score-bar {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .score-bar strong { color: var(--text); }
+
+  /* ─── AD BANNER TOP ─── */
+  .ad-top {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+    padding: 0.5rem;
+  }
+  .ad-placeholder {
+    width: 728px;
+    max-width: 100%;
+    height: 90px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 12px;
+    border-radius: 4px;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  main {
+    flex: 1;
+    display: flex;
+    gap: 0;
+  }
+  .sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sidebar h3 {
+    font-family: var(--pixel);
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+  }
+  .game-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .game-btn:hover { border-color: var(--accent); color: var(--text); }
+  .game-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .game-icon { font-size: 18px; }
+
+  .ad-side {
+    margin-top: auto;
+    width: 100%;
+    min-height: 250px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 10px;
+    border-radius: 8px;
+    text-align: center;
+    padding: 0.5rem;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* ─── GAME AREA ─── */
+  .game-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem;
+    gap: 1.5rem;
+  }
+  .game-header {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .game-title {
+    font-family: var(--pixel);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .hud {
+    display: flex;
+    gap: 1rem;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .hud span { color: var(--accent3); font-weight: 700; }
+
+  canvas {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #050510;
+    display: block;
+  }
+  canvas:focus { outline: 2px solid var(--accent); }
+
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    padding: 0.5rem 1.25rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { opacity: 0.85; }
+
+  .instructions {
+    max-width: 520px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .instructions strong { color: var(--text); }
+
+  /* ─── OVERLAY ─── */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,16,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    border-radius: 6px;
+  }
+  .canvas-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .overlay-title {
+    font-family: var(--pixel);
+    font-size: 16px;
+    color: var(--accent);
+  }
+  .overlay-score {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ─── FOOTER AD ─── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+    padding: 0.5rem;
+    gap: 1rem;
+    flex-direction: column;
+  }
+  .footer-note {
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 700px) {
+    .sidebar { width: 60px; padding: 1rem 0.5rem; }
+    .sidebar h3, .game-btn span { display: none; }
+    .game-btn { justify-content: center; }
+    .ad-top .ad-placeholder { height: 60px; font-size: 10px; }
+    header { padding: 0.75rem 1rem; }
+    .logo { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">RETRO<span>ARCADE</span></div>
+  <div class="score-bar">
+    <div>Snake best: <strong id="snakeBest">0</strong></div>
+    <div>Pong wins: <strong id="pongWins">0</strong></div>
+    <div>Breakout best: <strong id="breakoutBest">0</strong></div>
+  </div>
+</header>
+
+<!-- TOP AD BANNER (728x90 leaderboard) -->
+<div class="ad-top">
+  <!-- Replace with your actual AdSense ad unit -->
+  <!--
+  <ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+     data-ad-slot="XXXXXXXXXX"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  -->
+  <div class="ad-placeholder">📢 AdSense Leaderboard (728×90) — activate after AdSense approval</div>
+</div>
+
+<main>
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <h3>GAMES</h3>
+    <button class="game-btn active" onclick="switchGame('snake')" id="btn-snake">
+      <span class="game-icon">🐍</span><span>Snake</span>
+    </button>
+    <button class="game-btn" onclick="switchGame('pong')" id="btn-pong">
+      <span class="game-icon">🏓</span><span>Pong</span>
+    </button>
+    <button class="game-btn" onclick="switchGame('breakout')" id="btn-breakout">
+      <span class="game-icon">🧱</span><span>Breakout</span>
+    </button>
+
+    <!-- SIDEBAR AD (300x250 medium rectangle) -->
+    <div class="ad-side">
+      <!-- Replace with your actual AdSense ad unit -->
+      <!--
+      <ins class="adsbygoogle"
+         style="display:inline-block;width:160px;height:250px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      -->
+      <div style="font-size:18px">📢</div>
+      <div>AdSense<br>160×250</div>
+    </div>
+  </nav>
+
+  <!-- GAME AREA -->
+  <div class="game-area">
+
+    <!-- SNAKE -->
+    <div id="game-snake">
+      <div class="game-header">
+        <div class="game-title">SNAKE</div>
+        <div class="hud">Score: <span id="snakeScore">0</span></div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="snakeCanvas" width="480" height="480" tabindex="0"></canvas>
+        <div class="overlay" id="snakeOverlay">
+          <div class="overlay-title">SNAKE</div>
+          <div class="overlay-score">Use arrow keys or WASD to move</div>
+          <button class="btn primary" onclick="startSnake()">▶ Start Game</button>
+        </div>
+      </div>
+      <div class="instructions">
+        <strong>How to play:</strong> Arrow keys or WASD to steer. Eat 🍎 to grow. Don't hit the walls or yourself!
+      </div>
+    </div>
+
+    <!-- PONG -->
+    <div id="game-pong" style="display:none">
+      <div class="game-header">
+        <div class="game-title">PONG</div>
+        <div class="hud">You <span id="pongScoreP">0</span> — <span id="pongScoreA">0</span> AI</div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="pongCanvas" width="480" height="400" tabindex="0"></canvas>
+        <div class="overlay" id="pongOverlay">
+          <div class="overlay-title">PONG</div>
+          <div class="overlay-score">First to 7 wins!</div>
+          <button class="btn primary" onclick="startPong()">▶ Start Game</button>
+        </div>
+      </div>
+      <div class="instructions">
+        <strong>How to play:</strong> W/S or ↑/↓ to move your paddle (left side). First to 7 points wins.
+      </div>
+    </div>
+
+    <!-- BREAKOUT -->
+    <div id="game-breakout" style="display:none">
+      <div class="game-header">
+        <div class="game-title">BREAKOUT</div>
+        <div class="hud">Score: <span id="breakoutScore">0</span> &nbsp; Lives: <span id="breakoutLives">3</span></div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="breakoutCanvas" width="480" height="480" tabindex="0"></canvas>
+        <div class="overlay" id="breakoutOverlay">
+          <div class="overlay-title">BREAKOUT</div>
+          <div class="overlay-score">Break all the bricks!</div>
+          <button class="btn primary" onclick="startBreakout()">▶ Start Game</button>
+        </div>
+      </div>
+      <div class="instructions">
+        <strong>How to play:</strong> ←/→ or A/D to move the paddle. Don't let the ball fall! Break all bricks to win.
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- FOOTER AD (728x90) -->
+<footer>
+  <div class="ad-placeholder" style="width:728px;max-width:100%;height:90px;background:#1c1c2e;border:1px dashed #2a2a42;display:flex;align-items:center;justify-content:center;color:#7a7a9a;font-size:12px;border-radius:4px;">
+    📢 AdSense Leaderboard (728×90) — activate after AdSense approval
+  </div>
+  <div class="footer-note">© 2025 RetroArcade · Monetized with Google AdSense</div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════
+// GAME SWITCHER
+// ══════════════════════════════════════════
+const games = ['snake','pong','breakout'];
+let activeGame = 'snake';
+
+function switchGame(name) {
+  games.forEach(g => {
+    document.getElementById('game-'+g).style.display = g===name ? 'block' : 'none';
+    document.getElementById('btn-'+g).className = 'game-btn' + (g===name?' active':'');
+  });
+  activeGame = name;
+  if(name==='snake') stopPong(), stopBreakout();
+  if(name==='pong') stopSnake(), stopBreakout();
+  if(name==='breakout') stopSnake(), stopPong();
+}
+
+// ══════════════════════════════════════════
+// SNAKE
+// ══════════════════════════════════════════
+const SC = document.getElementById('snakeCanvas');
+const SX = SC.getContext('2d');
+const CELL = 20, COLS = 24, ROWS = 24;
+let snake, dir, food, snakeScore, snakeBest=0, snakeLoop, snakeAlive=false;
+
+function startSnake() {
+  document.getElementById('snakeOverlay').style.display='none';
+  snake = [{x:12,y:12},{x:11,y:12},{x:10,y:12}];
+  dir = {x:1,y:0};
+  snakeScore = 0;
+  snakeAlive = true;
+  spawnFood();
+  clearInterval(snakeLoop);
+  snakeLoop = setInterval(tickSnake, 120);
+  SC.focus();
+}
+function stopSnake() { clearInterval(snakeLoop); snakeAlive=false; }
+
+function spawnFood() {
+  let pos;
+  do { pos={x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)}; }
+  while(snake.some(s=>s.x===pos.x&&s.y===pos.y));
+  food = pos;
+}
+
+function tickSnake() {
+  const head = {x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+  if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||snake.some(s=>s.x===head.x&&s.y===head.y)){
+    gameOverSnake(); return;
+  }
+  snake.unshift(head);
+  if(head.x===food.x&&head.y===food.y){ snakeScore+=10; spawnFood(); }
+  else snake.pop();
+  document.getElementById('snakeScore').textContent=snakeScore;
+  drawSnake();
+}
+
+function gameOverSnake() {
+  clearInterval(snakeLoop); snakeAlive=false;
+  if(snakeScore>snakeBest){ snakeBest=snakeScore; document.getElementById('snakeBest').textContent=snakeBest; }
+  const ol=document.getElementById('snakeOverlay');
+  ol.innerHTML=`<div class="overlay-title">GAME OVER</div><div class="overlay-score">Score: ${snakeScore}</div><button class="btn primary" onclick="startSnake()">▶ Play Again</button>`;
+  ol.style.display='flex';
+}
+
+function drawSnake() {
+  SX.clearRect(0,0,SC.width,SC.height);
+  SX.fillStyle='#7c5cfc';
+  snake.forEach((s,i)=>{ SX.globalAlpha=i===0?1:0.7; SX.fillRect(s.x*CELL+1,s.y*CELL+1,CELL-2,CELL-2); });
+  SX.globalAlpha=1;
+  SX.font='16px serif'; SX.textAlign='center'; SX.textBaseline='middle';
+  SX.fillText('🍎',food.x*CELL+CELL/2,food.y*CELL+CELL/2);
+}
+
+SC.addEventListener('keydown',e=>{
+  if(!snakeAlive)return;
+  const map={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
+    w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+  const n=map[e.key]; if(n&&!(n.x===-dir.x&&n.y===-dir.y)){dir=n; e.preventDefault();}
+});
+
+// ══════════════════════════════════════════
+// PONG
+// ══════════════════════════════════════════
+const PC = document.getElementById('pongCanvas');
+const PX = PC.getContext('2d');
+const PW=480, PH=400, PAD=10, PH2=60;
+let pongP, pongAI, pongBall, pongSP, pongSA, pongDone, pongRaf, pongKeys={};
+let pongWins=0;
+
+function startPong() {
+  document.getElementById('pongOverlay').style.display='none';
+  pongP={y:PH/2-PH2/2}; pongAI={y:PH/2-PH2/2};
+  resetBall(); pongSP=0; pongSA=0; pongDone=false;
+  document.getElementById('pongScoreP').textContent=0;
+  document.getElementById('pongScoreA').textContent=0;
+  cancelAnimationFrame(pongRaf); pongRaf=requestAnimationFrame(tickPong);
+  PC.focus();
+}
+function stopPong(){ cancelAnimationFrame(pongRaf); pongDone=true; }
+
+function resetBall(){
+  pongBall={x:PW/2,y:PH/2,vx:(Math.random()>0.5?1:-1)*4,vy:(Math.random()*2-1)*3};
+}
+
+function tickPong(){
+  if(pongDone)return;
+  // Player paddle
+  const spd=5;
+  if(pongKeys['ArrowUp']||pongKeys['w']){ pongP.y=Math.max(0,pongP.y-spd); }
+  if(pongKeys['ArrowDown']||pongKeys['s']){ pongP.y=Math.min(PH-PH2,pongP.y+spd); }
+  // AI
+  const aim=pongBall.y-PH2/2;
+  if(pongAI.y<aim-2) pongAI.y=Math.min(PH-PH2,pongAI.y+3.5);
+  else if(pongAI.y>aim+2) pongAI.y=Math.max(0,pongAI.y-3.5);
+  // Ball
+  pongBall.x+=pongBall.vx; pongBall.y+=pongBall.vy;
+  if(pongBall.y<=0||pongBall.y>=PH){ pongBall.vy*=-1; }
+  // Player paddle collision
+  if(pongBall.x<=PAD+12&&pongBall.y>=pongP.y&&pongBall.y<=pongP.y+PH2){
+    pongBall.vx=Math.abs(pongBall.vx)*1.05;
+    pongBall.vy+=(pongBall.y-(pongP.y+PH2/2))*0.1;
+  }
+  // AI paddle collision
+  if(pongBall.x>=PW-PAD-12&&pongBall.y>=pongAI.y&&pongBall.y<=pongAI.y+PH2){
+    pongBall.vx=-Math.abs(pongBall.vx)*1.05;
+    pongBall.vy+=(pongBall.y-(pongAI.y+PH2/2))*0.1;
+  }
+  // Score
+  if(pongBall.x<0){ pongSA++; document.getElementById('pongScoreA').textContent=pongSA; if(pongSA>=7){endPong('AI');return;} resetBall(); }
+  if(pongBall.x>PW){ pongSP++; document.getElementById('pongScoreP').textContent=pongSP; if(pongSP>=7){endPong('YOU');return;} resetBall(); }
+  drawPong();
+  pongRaf=requestAnimationFrame(tickPong);
+}
+
+function endPong(winner){
+  pongDone=true;
+  if(winner==='YOU'){ pongWins++; document.getElementById('pongWins').textContent=pongWins; }
+  const ol=document.getElementById('pongOverlay');
+  ol.innerHTML=`<div class="overlay-title">${winner==='YOU'?'YOU WIN!':'AI WINS'}</div><div class="overlay-score">${pongSP} — ${pongSA}</div><button class="btn primary" onclick="startPong()">▶ Play Again</button>`;
+  ol.style.display='flex';
+}
+
+function drawPong(){
+  PX.fillStyle='#050510'; PX.fillRect(0,0,PW,PH);
+  PX.setLineDash([8,8]); PX.strokeStyle='#2a2a42'; PX.lineWidth=2;
+  PX.beginPath(); PX.moveTo(PW/2,0); PX.lineTo(PW/2,PH); PX.stroke(); PX.setLineDash([]);
+  // Paddles
+  PX.fillStyle='#7c5cfc'; PX.fillRect(PAD,pongP.y,12,PH2);
+  PX.fillStyle='#fc5c7d'; PX.fillRect(PW-PAD-12,pongAI.y,12,PH2);
+  // Ball
+  PX.fillStyle='#fff'; PX.beginPath(); PX.arc(pongBall.x,pongBall.y,7,0,Math.PI*2); PX.fill();
+}
+
+PC.addEventListener('keydown',e=>{ pongKeys[e.key]=true; e.preventDefault(); });
+PC.addEventListener('keyup',e=>{ pongKeys[e.key]=false; });
+document.addEventListener('keydown',e=>{ if(activeGame==='pong') pongKeys[e.key]=true; });
+document.addEventListener('keyup',e=>{ pongKeys[e.key]=false; });
+
+// ══════════════════════════════════════════
+// BREAKOUT
+// ══════════════════════════════════════════
+const BC = document.getElementById('breakoutCanvas');
+const BX = BC.getContext('2d');
+const BW=480, BH=480;
+const BRICK_ROWS=5, BRICK_COLS=10, BRICK_W=42, BRICK_H=18, BRICK_PAD=4, BRICK_TOP=50;
+let paddle2, ball2, bricks, breakScore, breakLives, breakDone, breakRaf, breakBest2=0, breakKeys2={};
+
+function startBreakout(){
+  document.getElementById('breakoutOverlay').style.display='none';
+  paddle2={x:BW/2-40,y:BH-30,w:80,h:14};
+  ball2={x:BW/2,y:BH-60,vx:3,vy:-4,r:8};
+  bricks=[];
+  const colors=['#fc5c7d','#ff9f43','#ffd700','#43e97b','#7c5cfc'];
+  for(let r=0;r<BRICK_ROWS;r++) for(let c=0;c<BRICK_COLS;c++)
+    bricks.push({x:c*(BRICK_W+BRICK_PAD)+20,y:r*(BRICK_H+BRICK_PAD)+BRICK_TOP,alive:true,color:colors[r]});
+  breakScore=0; breakLives=3; breakDone=false;
+  document.getElementById('breakoutScore').textContent=0;
+  document.getElementById('breakoutLives').textContent='❤️❤️❤️';
+  cancelAnimationFrame(breakRaf); breakRaf=requestAnimationFrame(tickBreakout);
+  BC.focus();
+}
+function stopBreakout(){ cancelAnimationFrame(breakRaf); breakDone=true; }
+
+function tickBreakout(){
+  if(breakDone)return;
+  if(breakKeys2['ArrowLeft']||breakKeys2['a']) paddle2.x=Math.max(0,paddle2.x-6);
+  if(breakKeys2['ArrowRight']||breakKeys2['d']) paddle2.x=Math.min(BW-paddle2.w,paddle2.x+6);
+  ball2.x+=ball2.vx; ball2.y+=ball2.vy;
+  if(ball2.x-ball2.r<=0||ball2.x+ball2.r>=BW) ball2.vx*=-1;
+  if(ball2.y-ball2.r<=0) ball2.vy*=-1;
+  // Paddle
+  if(ball2.y+ball2.r>=paddle2.y&&ball2.x>=paddle2.x&&ball2.x<=paddle2.x+paddle2.w&&ball2.vy>0){
+    ball2.vy=-Math.abs(ball2.vy);
+    ball2.vx=(ball2.x-(paddle2.x+paddle2.w/2))*0.12;
+  }
+  // Bricks
+  for(const b of bricks){
+    if(!b.alive)continue;
+    if(ball2.x+ball2.r>b.x&&ball2.x-ball2.r<b.x+BRICK_W&&ball2.y+ball2.r>b.y&&ball2.y-ball2.r<b.y+BRICK_H){
+      b.alive=false; ball2.vy*=-1; breakScore+=10;
+      document.getElementById('breakoutScore').textContent=breakScore;
+    }
+  }
+  // Ball lost
+  if(ball2.y>BH+ball2.r){
+    breakLives--;
+    const hearts='❤️'.repeat(Math.max(0,breakLives));
+    document.getElementById('breakoutLives').textContent=hearts||'💔';
+    if(breakLives<=0){ gameOverBreakout(); return; }
+    ball2={x:BW/2,y:BH-60,vx:3,vy:-4,r:8};
+  }
+  // Win
+  if(bricks.every(b=>!b.alive)){ winBreakout(); return; }
+  drawBreakout();
+  breakRaf=requestAnimationFrame(tickBreakout);
+}
+
+function gameOverBreakout(){
+  breakDone=true;
+  if(breakScore>breakBest2){ breakBest2=breakScore; document.getElementById('breakoutBest').textContent=breakBest2; }
+  const ol=document.getElementById('breakoutOverlay');
+  ol.innerHTML=`<div class="overlay-title">GAME OVER</div><div class="overlay-score">Score: ${breakScore}</div><button class="btn primary" onclick="startBreakout()">▶ Play Again</button>`;
+  ol.style.display='flex';
+}
+function winBreakout(){
+  breakDone=true;
+  if(breakScore>breakBest2){ breakBest2=breakScore; document.getElementById('breakoutBest').textContent=breakBest2; }
+  const ol=document.getElementById('breakoutOverlay');
+  ol.innerHTML=`<div class="overlay-title">YOU WIN! 🎉</div><div class="overlay-score">Score: ${breakScore}</div><button class="btn primary" onclick="startBreakout()">▶ Play Again</button>`;
+  ol.style.display='flex';
+}
+
+function drawBreakout(){
+  BX.fillStyle='#050510'; BX.fillRect(0,0,BW,BH);
+  for(const b of bricks){
+    if(!b.alive)continue;
+    BX.fillStyle=b.color; BX.beginPath(); BX.roundRect(b.x,b.y,BRICK_W,BRICK_H,4); BX.fill();
+  }
+  BX.fillStyle='#7c5cfc'; BX.beginPath(); BX.roundRect(paddle2.x,paddle2.y,paddle2.w,paddle2.h,6); BX.fill();
+  BX.fillStyle='#fff'; BX.beginPath(); BX.arc(ball2.x,ball2.y,ball2.r,0,Math.PI*2); BX.fill();
+}
+
+BC.addEventListener('keydown',e=>{ breakKeys2[e.key]=true; e.preventDefault(); });
+BC.addEventListener('keyup',e=>{ breakKeys2[e.key]=false; });
+document.addEventListener('keydown',e=>{ if(activeGame==='breakout') breakKeys2[e.key]=true; });
+document.addEventListener('keyup',e=>{ breakKeys2[e.key]=false; });
+
+// Initial draw
+drawSnake();
+</script>
+</body>
+</html>
